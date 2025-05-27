@@ -8,4 +8,5 @@ def home(req):
     return HttpResponse('<h1>hi</h1>')
 
 def about(req):
-    return HttpResponse('<h1>about</h1>')
+    # return HttpResponse('<h1>about</h1>')
+    return render(req, 'about.html')
