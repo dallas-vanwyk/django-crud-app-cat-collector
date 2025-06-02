@@ -5,6 +5,11 @@ from django.http import HttpResponse
 from .models import Cat
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from .forms import FeedingForm
+from django.contrib.auth.views import LoginView
+from django.contrib.auth import login
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
 
 # Cat class
 # class Cat:
@@ -23,21 +28,26 @@ from .forms import FeedingForm
 # ]
 
 # home view function
-def home(req):
-    # return HttpResponse('<h1>hi</h1>')
-    return render(req, 'home.html')
+# def home(req):
+#     # return HttpResponse('<h1>hi</h1>')
+#     return render(req, 'home.html')
 
-# about view
+
+class Home(LoginRequiredMixin, LoginView):
+    template_name = 'home.html'
+
+
+@login_required
 def about(req):
     # return HttpResponse('<h1>about</h1>')
     return render(req, 'about.html')
 
-# all cats view
+@login_required
 def cat_index(req):
-    cats = Cat.objects.all()
+    cats = Cat.objects.filter(user=req.user)
     return render(req, 'cats/index.html', {'cats': cats})
 
-# cat detail view
+@login_required
 def cat_detail(req, cat_id):
     cat = Cat.objects.get(id=cat_id)
     feeding_form = FeedingForm()
@@ -46,22 +56,26 @@ def cat_detail(req, cat_id):
     })
 
 # new cat
-class CatCreate(CreateView):
+class CatCreate(LoginRequiredMixin, CreateView):
     model = Cat
-    fields = '__all__'
+    fields = ['name', 'breed', 'description', 'age']
     # success_url = '/cats/'
+    def form_valid(self, form):
+        form.instance.user = self.request.user
+        return super().form_valid(form)
+
 
 # update cat
-class CatUpdate(UpdateView):
+class CatUpdate(LoginRequiredMixin, UpdateView):
     model = Cat
     fields = ['breed', 'description', 'age']
 
 # delete cat
-class CatDelete(DeleteView):
+class CatDelete(LoginRequiredMixin, DeleteView):
     model = Cat
     success_url = '/cats/'
 
-# add feeding view function
+@login_required
 def add_feeding(req, cat_id):
     form = FeedingForm(req.POST)
     if form.is_valid():
@@ -69,3 +83,29 @@ def add_feeding(req, cat_id):
         new_feeding.cat_id = cat_id
         new_feeding.save()
     return redirect('cat-detail', cat_id=cat_id)
+
+@login_required
+def signup(request):
+    error_message = ''
+    if request.method == 'POST':
+        # This is how to create a 'user' form object
+        # that includes the data from the browser
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            # This will add the user to the database
+            user = form.save()
+            # This is how we log a user in
+            login(request, user)
+            return redirect('cat-index')
+        else:
+            error_message = 'Invalid sign up - try again'
+    # A bad POST or a GET request, so render signup.html with an empty form
+    form = UserCreationForm()
+    context = {'form': form, 'error_message': error_message}
+    return render(request, 'signup.html', context)
+    # Same as: 
+    # return render(
+    #     request, 
+    #     'signup.html',
+    #     {'form': form, 'error_message': error_message}
+    # )

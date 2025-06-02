@@ -1,5 +1,7 @@
 from django.db import models
 from django.urls import reverse
+# from datetime import date
+from django.contrib.auth.models import User
 
 # A tuple of 2-tuples added above our models
 MEALS = (
@@ -21,6 +23,8 @@ class Cat(models.Model):
     def get_absolute_url(self):
         # reverse function dynamically finds the URL
         return reverse('cat-detail', kwargs={'cat_id': self.id})
+    
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     
 class Feeding(models.Model):
     date = models.DateField('Feeding date')
