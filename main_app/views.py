@@ -137,3 +137,7 @@ class ToyDelete(LoginRequiredMixin, DeleteView):
 def associate_toy(req, cat_id, toy_id):
     Cat.objects.get(id=cat_id).toys.add(toy_id)
     return redirect('cat-detail', cat_id=cat_id)
+
+def remove_toy(req, cat_id, toy_id):
+    Cat.objects.get(id=cat_id).toys.remove(toy_id)
+    return redirect('cat-detail', cat_id=cat_id)
