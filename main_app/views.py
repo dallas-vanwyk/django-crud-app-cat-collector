@@ -2,8 +2,9 @@
 
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
-from .models import Cat
+from .models import Cat, Toy
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
+from django.views.generic import ListView, DetailView
 from .forms import FeedingForm
 from django.contrib.auth.views import LoginView
 from django.contrib.auth import login
@@ -33,7 +34,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 #     return render(req, 'home.html')
 
 
-class Home(LoginRequiredMixin, LoginView):
+class Home(LoginView):
     template_name = 'home.html'
 
 
@@ -109,3 +110,21 @@ def signup(request):
     #     'signup.html',
     #     {'form': form, 'error_message': error_message}
     # )
+
+class ToyCreate(LoginRequiredMixin, CreateView):
+    model = Toy
+    fields = '__all__'
+
+class ToyList(LoginRequiredMixin, ListView):
+    model = Toy
+
+class ToyDetail(LoginRequiredMixin, DetailView):
+    model = Toy
+
+class ToyUpdate(LoginRequiredMixin, UpdateView):
+    model = Toy
+    fields = ['name', 'color']
+
+class ToyDelete(LoginRequiredMixin, DeleteView):
+    model = Toy
+    success_url = '/toys/'

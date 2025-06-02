@@ -15,4 +15,4 @@ class FeedingForm(forms.ModelForm):
                     'type': 'date'
                 }
             ),
-        }
+        }   
