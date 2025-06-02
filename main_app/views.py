@@ -51,9 +51,15 @@ def cat_index(req):
 @login_required
 def cat_detail(req, cat_id):
     cat = Cat.objects.get(id=cat_id)
+
+    # toys = Toy.objects.all()
+    toys_cat_doesnt_have = Toy.objects.exclude(id__in = cat.toys.all().values_list('id'))
+
     feeding_form = FeedingForm()
     return render(req, 'cats/detail.html', {
-        'cat': cat, 'feeding_form': feeding_form
+        'cat': cat,
+        'feeding_form': feeding_form,
+        'toys': toys_cat_doesnt_have,
     })
 
 # new cat
@@ -64,7 +70,6 @@ class CatCreate(LoginRequiredMixin, CreateView):
     def form_valid(self, form):
         form.instance.user = self.request.user
         return super().form_valid(form)
-
 
 # update cat
 class CatUpdate(LoginRequiredMixin, UpdateView):
@@ -128,3 +133,7 @@ class ToyUpdate(LoginRequiredMixin, UpdateView):
 class ToyDelete(LoginRequiredMixin, DeleteView):
     model = Toy
     success_url = '/toys/'
+
+def associate_toy(req, cat_id, toy_id):
+    Cat.objects.get(id=cat_id).toys.add(toy_id)
+    return redirect('cat-detail', cat_id=cat_id)
